@@ -18,12 +18,12 @@ public class KafkaStreamConfig {
   private final MessageProcessor messageProcessor;
 
   @Bean
-  public Supplier<Flux<Employee>> producer() {
+  public Supplier<Flux<String>> producer() {
     return messageProcessor::producer;
   }
 
   @Bean
-  public Function<Flux<Employee>, Mono<Void>> consumer() {
+  public Function<Flux<String>, Mono<Void>> consumer() {
     return messageProcessor::consumer;
   }
 }

@@ -5,29 +5,38 @@ spring:
     stream:
       kafka:
         binder:
+          configuration:
+            ssl:
+              truststore:
+                location: D:/Softwares/Apache_Kafka/ssl/kafka.broker.truststore.jks
+                password: changeit
+                type: JKS
+            security:
+              protocol: SASL_SSL
+            sasl:
+              mechanism: SCRAM-SHA-512
+              jaas:
+                config: org.apache.kafka.common.security.scram.ScramLoginModule required username="broker-admin" password="test123";
           producer-properties:
-            schema.registry.url: http://127.0.0.1:8081
             key.serializer: org.apache.kafka.common.serialization.ByteArraySerializer
-            value.serializer: io.confluent.kafka.serializers.KafkaAvroSerializer
+            value.serializer: org.apache.kafka.common.serialization.StringSerializer
           consumer-properties:
-            schema.registry.url: http://127.0.0.1:8081
             key.deserializer: org.apache.kafka.common.serialization.ByteArrayDeserializer
-            value.deserializer: io.confluent.kafka.serializers.KafkaAvroDeserializer
-            specific.avro.reader: true
+            value.deserializer: org.apache.kafka.common.serialization.StringDeserializer
           transaction:
             producer:
               error-channel-enabled: true
       bindings:
         producer-out-0:
-          destination: stream_topic
-          content-type: application/*+avro
+          destination: sample-topic
+          content-type: text/plain
           binder: kafka
           producer:
             use-native-encoding: true
         consumer-in-0:
-          destination: stream_topic
+          destination: sample-topic
           group: stream-api
-          content-type: application/*+avro
+          content-type: text/plain
           binder: kafka
           producer:
             use-native-decoding: true

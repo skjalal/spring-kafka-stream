@@ -12,21 +12,17 @@ import java.util.stream.Stream;
 @Service
 public class MessageProcessor {
 
-  public Flux<Employee> producer() {
+  public Flux<String> producer() {
     log.info("Sending data to kafka");
-    return Flux.fromStream(
-        Stream.of(
-            buildPayload("101", "ABC", "IT", "SSE"),
-            buildPayload("102", "PQR", "RE", "SE"),
-            buildPayload("103", "XYZ", "IT", "SE")));
+    return Flux.fromStream(Stream.of("101", "102", "103", "104"));
   }
 
-  public Mono<Void> consumer(Flux<Employee> employees) {
+  public Mono<Void> consumer(Flux<String> employees) {
     return employees.doOnNext(this::verify).then();
   }
 
-  private void verify(Employee employee) {
-    log.info("Reading data from kafka - ID: {}", employee.getId());
+  private void verify(String data) {
+    log.info("Reading data from kafka - ID: {}", data);
   }
 
   private Employee buildPayload(String id, String name, String department, String designation) {
