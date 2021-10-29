@@ -1,31 +1,28 @@
 spring:
+  kafka:
+    bootstrap-servers:
+      - localhost:9092
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.ByteArraySerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+    consumer:
+      key-deserializer: org.apache.kafka.common.serialization.ByteArrayDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+    properties:
+      sasl:
+        mechanism: SCRAM-SHA-512
+        jaas:
+          config: org.apache.kafka.common.security.scram.ScramLoginModule required username="broker-admin" password="test123";
+    security:
+      protocol: SASL_SSL
+    ssl:
+      trust-store-location: file://D:/Softwares/Apache_Kafka/ssl/kafka.broker.truststore.jks
+      trust-store-password: changeit
+      trust-store-type: JKS
   cloud:
     function:
       definition: consumer;producer
     stream:
-      kafka:
-        binder:
-          configuration:
-            ssl:
-              truststore:
-                location: D:/Softwares/Apache_Kafka/ssl/kafka.broker.truststore.jks
-                password: changeit
-                type: JKS
-            security:
-              protocol: SASL_SSL
-            sasl:
-              mechanism: SCRAM-SHA-512
-              jaas:
-                config: org.apache.kafka.common.security.scram.ScramLoginModule required username="broker-admin" password="test123";
-          producer-properties:
-            key.serializer: org.apache.kafka.common.serialization.ByteArraySerializer
-            value.serializer: org.apache.kafka.common.serialization.StringSerializer
-          consumer-properties:
-            key.deserializer: org.apache.kafka.common.serialization.ByteArrayDeserializer
-            value.deserializer: org.apache.kafka.common.serialization.StringDeserializer
-          transaction:
-            producer:
-              error-channel-enabled: true
       bindings:
         producer-out-0:
           destination: sample-topic
