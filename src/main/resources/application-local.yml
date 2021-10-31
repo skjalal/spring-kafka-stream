@@ -1,33 +1,46 @@
 spring:
+  kafka:
+    bootstrap-servers:
+      - broker:9092
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.ByteArraySerializer
+      value-serializer: io.confluent.kafka.serializers.KafkaAvroSerializer
+    consumer:
+      key-deserializer: org.apache.kafka.common.serialization.ByteArrayDeserializer
+      value-deserializer: io.confluent.kafka.serializers.KafkaAvroDeserializer
+      properties:
+        specific:
+          avro:
+            reader: true
+    properties:
+      schema:
+        registry:
+          url: http://127.0.0.1:8081
+      sasl:
+        mechanism: SCRAM-SHA-512
+        jaas:
+          config: org.apache.kafka.common.security.scram.ScramLoginModule required username="broker-admin" password="test123";
+    security:
+      protocol: SASL_SSL
+    ssl:
+      trust-store-location: classpath:kafka/kafka.broker.truststore.jks
+      trust-store-password: changeit
+      trust-store-type: JKS
   cloud:
     function:
       definition: consumer;producer
     stream:
-      kafka:
-        binder:
-          producer-properties:
-            schema.registry.url: http://127.0.0.1:8081
-            key.serializer: org.apache.kafka.common.serialization.ByteArraySerializer
-            value.serializer: io.confluent.kafka.serializers.KafkaAvroSerializer
-          consumer-properties:
-            schema.registry.url: http://127.0.0.1:8081
-            key.deserializer: org.apache.kafka.common.serialization.ByteArrayDeserializer
-            value.deserializer: io.confluent.kafka.serializers.KafkaAvroDeserializer
-            specific.avro.reader: true
-          transaction:
-            producer:
-              error-channel-enabled: true
       bindings:
         producer-out-0:
-          destination: stream_topic
+          destination: ssl-topic
           content-type: application/*+avro
           binder: kafka
           producer:
             use-native-encoding: true
         consumer-in-0:
-          destination: stream_topic
-          group: stream-api
+          destination: ssl-topic
+          group: sasl-ssl
           content-type: application/*+avro
           binder: kafka
-          producer:
+          consumer:
             use-native-decoding: true
