@@ -2,6 +2,7 @@ package com.example.processor;
 
 import com.example.Employee;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.kafka.streams.kstream.KStream;
 import org.springframework.kafka.support.KafkaHeaders;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.support.MessageBuilder;
@@ -23,12 +24,11 @@ public class MessageProcessor {
             buildPayload("103", "XYZ", "IT", "SE")));
   }
 
-  public void consumer(Flux<Message<Employee>> employees) {
-    employees.subscribe(this::verify);
+  public void consumer(KStream<String, Employee> employees) {
+    employees.foreach(this::verify);
   }
 
-  private void verify(Message<Employee> message) {
-    Employee employee = message.getPayload();
+  private void verify(String key, Employee employee) {
     log.info("Reading data from kafka - ID: {}", employee.getId());
   }
 

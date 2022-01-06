@@ -2,50 +2,43 @@ spring:
   #  kafka:
   #    bootstrap-servers:
   #      - broker:9092
-  #      sasl:
-  #        mechanism: SCRAM-SHA-512
-  #        jaas:
-  #          config: org.apache.kafka.common.security.scram.ScramLoginModule required username="broker-admin" password="test123";
-  #    security:
-  #      protocol: SASL_SSL
-  #    ssl:
-  #      trust-store-location: classpath:kafka/kafka.broker.truststore.jks
-  #      trust-store-password: changeit
-  #      trust-store-type: JKS
+  #        sasl:
+  #          mechanism: SCRAM-SHA-512
+  #          jaas:
+  #            config: org.apache.kafka.common.security.scram.ScramLoginModule required username="broker-admin" password="test123";
+  #      security:
+  #        protocol: SASL_SSL
+  #      ssl:
+  #        trust-store-location: classpath:kafka/kafka.broker.truststore.jks
+  #        trust-store-password: changeit
+  #        trust-store-type: JKS
   cloud:
     function:
-      definition: consumer;producer
+      definition: consumer
     stream:
       kafka:
-        binder:
-          brokers:
-            - broker:9092
-        bindings:
-          producer-out-0:
-            producer:
-              configuration:
-                schema.registry.url: http://127.0.0.1:8081
-                key.serializer: org.apache.kafka.common.serialization.StringSerializer
-                value.serializer: io.confluent.kafka.serializers.KafkaAvroSerializer
-          consumer-in-0:
-            consumer:
-              configuration:
-                schema.registry.url: http://127.0.0.1:8081
-                specific.avro.reader: true
-                key.deserializer: org.apache.kafka.common.serialization.StringDeserializer
-                value.deserializer: io.confluent.kafka.serializers.KafkaAvroDeserializer
+        streams:
+          bindings:
+            consumer-in-0:
+              consumer:
+                application-id: spring-kafka-stream-101
+                content-type: application/*+avro
+                start-offset: earliest
+                key-serde: org.apache.kafka.common.serialization.Serdes$StringSerde
+                value-serde: io.confluent.kafka.streams.serdes.avro.SpecificAvroSerde
+          binder:
+            configuration:
+              schema:
+                registry:
+                  url: http://127.0.0.1:8081
+              specific:
+                avro:
+                  reader: true
+            brokers:
+              - broker:9092
       bindings:
-        producer-out-0:
-          destination: ssl-topic
-          content-type: application/*+avro
-          binder: kafka
-          producer:
-            use-native-encoding: true
         consumer-in-0:
           destination: ssl-topic
-          group: consumer_group_11
-          content-type: application/*+avro
-          binder: kafka
           consumer:
             max-attempts: 3
             back-off-max-interval: 10000

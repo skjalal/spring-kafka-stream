@@ -3,6 +3,7 @@ package com.example.config;
 import com.example.Employee;
 import com.example.processor.MessageProcessor;
 import lombok.RequiredArgsConstructor;
+import org.apache.kafka.streams.kstream.KStream;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.Message;
@@ -17,13 +18,13 @@ public class KafkaStreamConfig {
 
   private final MessageProcessor messageProcessor;
 
-  @Bean
+//  @Bean
   public Supplier<Flux<Message<Employee>>> producer() {
     return messageProcessor::producer;
   }
 
   @Bean
-  public Consumer<Flux<Message<Employee>>> consumer() {
+  public Consumer<KStream<String, Employee>> consumer() {
     return messageProcessor::consumer;
   }
 }
