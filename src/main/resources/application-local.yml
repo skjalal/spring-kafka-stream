@@ -1,35 +1,39 @@
 spring:
-  kafka:
-    bootstrap-servers:
-      - broker:9092
-    producer:
-      key-serializer: org.apache.kafka.common.serialization.ByteArraySerializer
-      value-serializer: io.confluent.kafka.serializers.KafkaAvroSerializer
-    consumer:
-      key-deserializer: org.apache.kafka.common.serialization.ByteArrayDeserializer
-      value-deserializer: io.confluent.kafka.serializers.KafkaAvroDeserializer
-      properties:
-        specific:
-          avro:
-            reader: true
-    properties:
-      schema:
-        registry:
-          url: http://127.0.0.1:8081
-      sasl:
-        mechanism: SCRAM-SHA-512
-        jaas:
-          config: org.apache.kafka.common.security.scram.ScramLoginModule required username="broker-admin" password="test123";
-    security:
-      protocol: SASL_SSL
-    ssl:
-      trust-store-location: classpath:kafka/kafka.broker.truststore.jks
-      trust-store-password: changeit
-      trust-store-type: JKS
+  #  kafka:
+  #    bootstrap-servers:
+  #      - broker:9092
+  #      sasl:
+  #        mechanism: SCRAM-SHA-512
+  #        jaas:
+  #          config: org.apache.kafka.common.security.scram.ScramLoginModule required username="broker-admin" password="test123";
+  #    security:
+  #      protocol: SASL_SSL
+  #    ssl:
+  #      trust-store-location: classpath:kafka/kafka.broker.truststore.jks
+  #      trust-store-password: changeit
+  #      trust-store-type: JKS
   cloud:
     function:
       definition: consumer;producer
     stream:
+      kafka:
+        binder:
+          brokers:
+            - broker:9092
+        bindings:
+          producer-out-0:
+            producer:
+              configuration:
+                schema.registry.url: http://127.0.0.1:8081
+                key.serializer: org.apache.kafka.common.serialization.StringSerializer
+                value.serializer: io.confluent.kafka.serializers.KafkaAvroSerializer
+          consumer-in-0:
+            consumer:
+              configuration:
+                schema.registry.url: http://127.0.0.1:8081
+                specific.avro.reader: true
+                key.deserializer: org.apache.kafka.common.serialization.StringDeserializer
+                value.deserializer: io.confluent.kafka.serializers.KafkaAvroDeserializer
       bindings:
         producer-out-0:
           destination: ssl-topic
@@ -39,8 +43,14 @@ spring:
             use-native-encoding: true
         consumer-in-0:
           destination: ssl-topic
-          group: sasl-ssl
+          group: consumer_group_11
           content-type: application/*+avro
           binder: kafka
           consumer:
+            max-attempts: 3
+            back-off-max-interval: 10000
+            back-off-initial-interval: 1000
+            back-off-multiplier: 2.0
+            default-retryable: false
+            concurrency: 1
             use-native-decoding: true

@@ -2,9 +2,11 @@ package com.example.processor;
 
 import com.example.Employee;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.kafka.support.KafkaHeaders;
+import org.springframework.messaging.Message;
+import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
 
 import java.util.stream.Stream;
 
@@ -12,7 +14,7 @@ import java.util.stream.Stream;
 @Service
 public class MessageProcessor {
 
-  public Flux<Employee> producer() {
+  public Flux<Message<Employee>> producer() {
     log.info("Sending data to kafka");
     return Flux.fromStream(
         Stream.of(
@@ -21,20 +23,23 @@ public class MessageProcessor {
             buildPayload("103", "XYZ", "IT", "SE")));
   }
 
-  public Mono<Void> consumer(Flux<Employee> employees) {
-    return employees.doOnNext(this::verify).then();
+  public void consumer(Flux<Message<Employee>> employees) {
+    employees.subscribe(this::verify);
   }
 
-  private void verify(Employee employee) {
+  private void verify(Message<Employee> message) {
+    Employee employee = message.getPayload();
     log.info("Reading data from kafka - ID: {}", employee.getId());
   }
 
-  private Employee buildPayload(String id, String name, String department, String designation) {
-    return Employee.newBuilder()
-        .setId(id)
-        .setName(name)
-        .setDepartment(department)
-        .setDesignation(designation)
-        .build();
+  private Message<Employee> buildPayload(String id, String name, String department, String designation) {
+    Employee employee = Employee.newBuilder()
+            .setId(id)
+            .setName(name)
+            .setDepartment(department)
+            .setDesignation(designation)
+            .build();
+    String key = String.format("key-%s", id);
+    return MessageBuilder.withPayload(employee).setHeader(KafkaHeaders.MESSAGE_KEY, key).build();
   }
 }
